@@ -12,6 +12,7 @@ public class PlayerController : MonoBehaviour
     private float mouseClickPosX;
     private float mouseActivePosX;
     // Clone
+
     [Header("Clone Variables")]
     [SerializeField] private GameObject firstStickman;
     [SerializeField] private int CloneAmountsToAdd = 1;
@@ -42,14 +43,14 @@ public class PlayerController : MonoBehaviour
     void Update()
     {
         //Movement();
-        if (Input.GetKeyDown(KeyCode.B))
-        {
-            DestroyStickmans2(CloneAmountsToDestroy);
-        }
-        else if (Input.GetKeyDown(KeyCode.A))
-        {
-            CloneStickman4(CloneAmountsToAdd);
-        }
+        //if (Input.GetKeyDown(KeyCode.B))
+        //{
+        //    DestroyStickmans2(CloneAmountsToDestroy);
+        //}
+        //else if (Input.GetKeyDown(KeyCode.A))
+        //{
+        //    CloneStickman4(CloneAmountsToAdd);
+        //}
     }
 
     private void Movement()
@@ -431,11 +432,6 @@ public class PlayerController : MonoBehaviour
         return capacityOfCircle;
 
     }
-
-   
-
-   
-    
 
     private int CircleCount()
     {

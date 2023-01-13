@@ -230,6 +230,7 @@ GameObject:
   m_Component:
   - component: {fileID: 278206799}
   - component: {fileID: 278206800}
+  - component: {fileID: 278206801}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -268,6 +269,28 @@ MonoBehaviour:
   mouseMovement: 0
   forwardSpeed: 1
   horizontalSpeed: 1
+  firstStickman: {fileID: 919132147630529598}
+  CloneAmountsToAdd: 1
+  CloneAmountsToDestroy: 2
+  stickmanPrefab: {fileID: 8584646687099331769, guid: be31bb3531ed7df4ab96e49b5c105e6e, type: 3}
+  stickmanRadius: 0
+  stickCount: 1
+  stickCountInLastCircle: 0
+  circleCount: 0
+  isLastCircleFull: 0
+  stickmanList: []
+--- !u!114 &278206801
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 278206798}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a8c65c9291a450640801f91b819c5b8f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
   firstStickman: {fileID: 919132147630529598}
   CloneAmountsToAdd: 1
   CloneAmountsToDestroy: 2
