@@ -2026,6 +2026,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8964725125534088707}
   - component: {fileID: 3065041312761226361}
+  - component: {fileID: 6030366144109968486}
   m_Layer: 0
   m_Name: Stickman
   m_TagString: Stickman
@@ -2070,6 +2071,19 @@ Animator:
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorControllerStateOnDisable: 0
+--- !u!114 &6030366144109968486
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8584646687099331769}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e1306a8f634af5646a2d5244245163f6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  myCircleNumber: 0
 --- !u!1 &8600564889160776099
 GameObject:
   m_ObjectHideFlags: 0
@@ -2083,7 +2097,7 @@ GameObject:
   - component: {fileID: 2331019670513277119}
   m_Layer: 0
   m_Name: Stickman_Red
-  m_TagString: Untagged
+  m_TagString: Stickman
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -2216,7 +2230,7 @@ CapsuleCollider:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8600564889160776099}
   m_Material: {fileID: 0}
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_Enabled: 1
   m_Radius: 0.25581464
   m_Height: 0.80856687

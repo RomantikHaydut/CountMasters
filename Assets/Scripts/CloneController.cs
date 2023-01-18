@@ -1,43 +1,49 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class CloneController : MonoBehaviour
 {
-    // Clone
     [Header("Clone Variables")]
-    [SerializeField] private int maxCloneCount = 100;
+    public int maxCloneCount = 100;
     [SerializeField] private GameObject firstStickman;
     [SerializeField] private int CloneAmountsToAdd = 1;
     [SerializeField] private int CloneAmountsToDestroy = 1;
-    [SerializeField] private GameObject stickmanPrefab;
-    [SerializeField] private float stickmanRadius;
-    [SerializeField] private int stickCount = 1;
-    [SerializeField] private int stickCountInLastCircle = 0;
+    public GameObject stickmanPrefab;
+    [SerializeField] private GameObject circlePrefab;
+    public float stickmanRadius;
+    public int stickCount = 1;
     [SerializeField] private int circleCount = 0;
     [SerializeField] private List<GameObject> stickmanList = new List<GameObject>();
-
+    [SerializeField] private List<GameObject> destroyedStickmanList = new List<GameObject>();
+    [SerializeField] private List<CircleController> circleControllerList = new List<CircleController>();
+    [SerializeField] private int destroyedStickmanCount = 0;
+    [SerializeField] private int destroyIndexedStickman = 0;
+    [SerializeField] private Text cloneCountText;
+    private UIManager uiManager;
 
     private void Awake()
     {
-        circleCount = 1;
-        stickCountInLastCircle = 0;
+        circleCount = 0;
         CapsuleCollider capsuleCollider = stickmanPrefab.GetComponentInChildren(typeof(CapsuleCollider)) as CapsuleCollider;
         stickmanRadius = capsuleCollider.radius;
-        stickmanList.Add(firstStickman);
-
+        uiManager = FindObjectOfType<UIManager>();
         CloneStickmanStart(maxCloneCount);
+        DisplayCloneCount();
+
     }
 
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.S))
+        if (Input.GetKeyDown(KeyCode.X))
         {
-            DestroyStickmans(CloneAmountsToDestroy);
+            DestroyStickmans3(CloneAmountsToDestroy);
         }
-        else if (Input.GetKeyDown(KeyCode.A))
+        else if (Input.GetKeyDown(KeyCode.Z))
         {
-            CloneStickman(CloneAmountsToAdd);
+            CloneStickman4(CloneAmountsToAdd);
         }
     }
 
@@ -46,138 +52,214 @@ public class CloneController : MonoBehaviour
 
     private void CloneStickmanStart(int cloneCount)
     {
+        stickmanList.Add(firstStickman);
         for (int i = 0; i < cloneCount; i++)
         {
             GameObject stickmanClone = Instantiate(stickmanPrefab, transform.position, Quaternion.identity, transform);
             stickmanClone.name = circleCount.ToString();
             stickmanList.Add(stickmanClone);
-
-
             stickmanClone.SetActive(false);
-
         }
+        CalculateCapacityOfCircles();
+        SplitStickmansToCircles();
     }
 
-    private void CloneStickman(int cloneCount)
+    public void CloneStickman4(int cloneCount)
     {
-        if (stickCount <= maxCloneCount)
+        if (stickCount < maxCloneCount)
         {
             for (int i = 0; i < cloneCount; i++)
             {
-                if (stickCount > maxCloneCount)
+                if (stickCount == maxCloneCount)
                     break;
 
-                if (stickCountInLastCircle == (int)CapacityOfLastCircle())
+
+                GameObject stickmanClone;
+                if (destroyedStickmanList.Count > 0)
                 {
-                    SortLastCircle();
-                    circleCount++;
-                    stickCountInLastCircle = 0;
+                    stickmanClone = destroyedStickmanList[destroyedStickmanList.Count - 1];
+                    stickmanClone.SetActive(true);
+                    destroyedStickmanList.Remove(stickmanClone);
+                    stickCount++;
                 }
-
-                GameObject stickmanClone = stickmanList[stickCount];
-                stickmanClone.name = circleCount.ToString();
-                stickmanClone.SetActive(true);
-                stickCount++;
-                stickCountInLastCircle++;
+                else
+                {
+                    stickmanClone = stickmanList[stickCount];
+                    stickmanClone.SetActive(true);
+                    stickCount++;
+                }
             }
-
-            SortLastCircle();
+            CheckAndSortCircles2();
+            PlaceStickmansInAllCircle2();
         }
-        
+
     }
 
+    private void CheckAndSortCircles2()
+    {
+        for (int i = 0; i < stickmanList.Count; i++)
+        {
+            stickmanList[i].SetActive(false);
+        }
+
+        for (int i = 0; i < stickCount; i++)
+        {
+            stickmanList[i].SetActive(true);
+        }
+    }
     #endregion
 
     #region Destroy Methods
 
-    private void DestroyStickmans(int destroyAmount)
+
+    public void DestroySpecificStickman(GameObject destroying)
     {
-        for (int i = 0; i < destroyAmount; i++)
+        if (stickCount > 1)
         {
-            if (stickCount > 1)
-            {
-                GameObject destroyingStickman = stickmanList[stickCount - 1].gameObject;
-                destroyingStickman.SetActive(false);
-                stickCount--;
-
-                if (stickCountInLastCircle > 1)
-                    stickCountInLastCircle--;
-                else
-                {
-                    DecreaseCircle();
-                }
-
-            }
+            int index = stickmanList.IndexOf(destroying);
+            stickmanList[index].SetActive(false);
+            destroyedStickmanList.Add(stickmanList[index]);
+            stickCount--;
         }
-
-        SortLastCircle();
+        DisplayCloneCount();
 
     }
-    private void DecreaseCircle()
+
+    public void DestroyStickmans3(int destroyAmount)
     {
-        if (circleCount >= 1)
+        if (stickCount > 1)
         {
-            circleCount--;
-            stickCountInLastCircle = (int)CapacityOfLastCircle();
+            int newStickCount = stickCount;
+            List<GameObject> destroyingStickmanList = new List<GameObject>();
+            for (int i = 0; i < destroyAmount; i++)
+            {
+                if (newStickCount > 1)
+                {
+                    GameObject destroyingStickman = stickmanList[stickCount - 1 - i].gameObject;
+                    destroyingStickmanList.Add(destroyingStickman);
+                    destroyedStickmanList.Add(destroyingStickman);
+                    newStickCount--;
+                }
+                else
+                    break;
+                   
+            }
+            StartCoroutine(DestroyStickmans_Coroutine(destroyingStickmanList));
+        }
+    }
+    private IEnumerator DestroyStickmans_Coroutine(List<GameObject> stickmanList)
+    {
+        float speed = 4f;
+        float timer = 0.0f;
+        float stopTime = 1f;
+        List<Vector3> startPosList = new List<Vector3>();
+        for (int i = 0; i < stickmanList.Count; i++)
+        {
+            startPosList.Add(stickmanList[i].transform.position);
+        }
+        while (true)
+        {
+            yield return null;
+            if (timer >= stopTime)
+            {
+                for (int i = 0; i < stickmanList.Count; i++)
+                {
+                    stickmanList[i].transform.position = transform.position;
+                    stickmanList[i].SetActive(false);
+                    stickCount--;
+                    
+                }
+                CheckAndSortCircles2();
+                PlaceStickmansInAllCircle2();
+                DisplayCloneCount();
+                yield break;
+            }
+            timer += Time.deltaTime * speed;
+            for (int i = 0; i < stickmanList.Count; i++)
+            {
+                stickmanList[i].transform.position = Vector3.Lerp(startPosList[i], transform.position, timer);
+            }
         }
     }
     #endregion
 
 
     #region Common Methods For Clone and Destroy
-    
-    private void SortLastCircle()
+
+
+    private void PlaceStickmansInAllCircle2()
     {
-        if (circleCount > 0 && stickCount > 1 && stickCountInLastCircle > 0)
+        for (int i = 0; i < circleControllerList.Count; i++)
         {
-            List<GameObject> stickmansListInCircle = new List<GameObject>();
-            GameObject[] stickmanArray = GameObject.FindGameObjectsWithTag("Stickman");
-            for (int i = 0; i < stickmanArray.Length; i++)
+            circleControllerList[i].PlaceMyStickmans();
+        }
+        DisplayCloneCount();
+    }
+
+    private float CapacityOfNumberedCircle(int circleNumber)
+    {
+        float capacityOfCircle;
+        if (circleNumber != 0)
+        {
+            float circleLenght = Mathf.PI * 2 * stickmanRadius * circleNumber;
+            capacityOfCircle = (circleLenght / stickmanRadius);
+        }
+        else
+        {
+            capacityOfCircle = 1f;
+        }
+        return capacityOfCircle;
+    }
+
+    private void CalculateCapacityOfCircles()
+    {
+        int circleNumber = 0;
+        int stickCount = 0;
+        for (int i = 0; i < stickmanList.Count; i++)
+        {
+            if (stickCount == (int)CapacityOfNumberedCircle(circleNumber))
             {
-                if (stickmanArray[i].name == circleCount.ToString())
+                GameObject circleControllerObject = Instantiate(circlePrefab, Vector3.zero, Quaternion.identity);
+                CircleController circleController = circleControllerObject.GetComponent<CircleController>();
+                if (circleController != null)
                 {
-                    if (stickmanArray[i].gameObject.activeInHierarchy)
-                    {
-                        stickmansListInCircle.Add(stickmanArray[i].gameObject); // Stickmans in last circle
-                    }
+                    circleController.myIndex = circleNumber;
+                    circleController.myCapacity = CapacityOfNumberedCircle(circleNumber);
+                    circleControllerList.Add(circleController);
+                    circleNumber++;
+                    stickCount = 0;
                 }
             }
+            stickCount++;
 
-            float capacityOfCircle = CapacityOfLastCircle();
-            float leftOverCount = capacityOfCircle - (int)capacityOfCircle; // This value is splitting all angles.
-
-            for (int i = 0; i < stickCountInLastCircle; i++)
-            {
-                float angle = (i * 2 * Mathf.PI + leftOverCount) / (stickCountInLastCircle);
-                stickmansListInCircle[i].transform.position = transform.position + new Vector3(Mathf.Sin(angle) * stickmanRadius * circleCount, 0, Mathf.Cos(angle) * stickmanRadius * circleCount); // Split stickmans in last circle.
-            }
         }
-
-
+        GameObject LastCircleControllerObject = Instantiate(circlePrefab, Vector3.zero, Quaternion.identity);
+        CircleController LastCircleController = LastCircleControllerObject.GetComponent<CircleController>();
+        LastCircleController.myIndex = circleNumber;
+        LastCircleController.myCapacity = stickCount;
+        circleControllerList.Add(LastCircleController);
     }
 
-    private void CalculateStickmanCountInLastCircle()
+    private void SplitStickmansToCircles()
     {
-        List<GameObject> stickmansListInLastCircle = new List<GameObject>();
-        GameObject[] stickmanArray = GameObject.FindGameObjectsWithTag("Stickman");
-        for (int i = 0; i < stickmanArray.Length; i++)
+        int circleNumber = 0;
+        int stickCount = 0;
+        for (int i = 0; i < stickmanList.Count; i++)
         {
-            if (stickmanArray[i].name == circleCount.ToString())
+            if (stickCount == (int)CapacityOfNumberedCircle(circleNumber))
             {
-                stickmansListInLastCircle.Add(stickmanArray[i].gameObject); // Stickmans in last circle
+                stickCount = 0;
+                circleNumber++;
             }
+            GameObject stickmanClone = stickmanList[i].gameObject;
+            stickCount++;
+            circleControllerList[circleNumber].GetComponent<CircleController>().myStickmans.Add(stickmanClone);
         }
-
-        stickCountInLastCircle = stickmansListInLastCircle.Count;
     }
 
-    private float CapacityOfLastCircle()
+    public void DisplayCloneCount()
     {
-        float circleLenght = Mathf.PI * 2 * stickmanRadius * circleCount;
-        float capacityOfCircle = (circleLenght / stickmanRadius);
-
-        return capacityOfCircle;
-
+        uiManager.DisplayText(cloneCountText, stickCount.ToString());
     }
     #endregion
 }

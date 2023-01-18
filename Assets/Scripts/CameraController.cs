@@ -7,6 +7,8 @@ public class CameraController : MonoBehaviour
     private Transform target;
 
     private Vector3 offset;
+
+    [SerializeField] private float followSpeed = 1f;
     private void Awake()
     {
         target = FindObjectOfType<PlayerController>().transform;
@@ -23,7 +25,7 @@ public class CameraController : MonoBehaviour
 
     private void FollowTarget()
     {
-        Vector3 smoothPos = Vector3.Lerp(transform.position, target.position - offset, Time.deltaTime);
+        Vector3 smoothPos = Vector3.Lerp(transform.position, target.position - offset, Time.deltaTime * followSpeed);
         transform.position = smoothPos;
     }
 }
